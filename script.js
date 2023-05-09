@@ -1,131 +1,166 @@
-const todoInput = document.querySelector(".todo-input");
-const todoButton = document.querySelector(".todo-button");
-const todoList = document.querySelector(".todo-list");
-const filterOption = document.querySelector(".filter-todo");
+var form = document.querySelector("#userForm");
+const allUsersData = [];
 
-document.addEventListener("DOMContentLoaded", getLocalTodos);
-todoButton.addEventListener("click", addTodo);
-todoList.addEventListener("click", deleteCheck);
-filterOption.addEventListener("change", filterTodo);
+//function to reset the form
+const resetForm = function () {
+  form.classList.remove('was-validated')
+  const name = document.getElementById('name');
+  name.value = "";
 
-function addTodo(event) {
-    event.preventDefault();
-    const todoDiv = document.createElement("div");
-    todoDiv.classList.add("todo");
-    const newTodo = document.createElement("li");
-    newTodo.innerText = todoInput.value; 
-    newTodo.classList.add("todo-item");
-    todoDiv.appendChild(newTodo);
-    //ADDING TO LOCAL STORAGE 
-    saveLocalTodos(todoInput.value);
-    
-    const completedButton = document.createElement("button");
-    completedButton.innerHTML = '<i class="fas fa-check-circle"></li>';
-    completedButton.classList.add("complete-btn");
-    todoDiv.appendChild(completedButton);
+  const email = document.getElementById('email');
+  email.value = "";
 
-    const trashButton = document.createElement("button");
-    trashButton.innerHTML = '<i class="fas fa-trash"></li>';
-    trashButton.classList.add("trash-btn");
-    todoDiv.appendChild(trashButton);
-    
-    todoList.appendChild(todoDiv);
-    todoInput.value = "";
-}
+  const website = document.getElementById('website');
+  website.value = "";
 
-function deleteCheck(e) {
-    const item = e.target;
+  const image = document.getElementById('image');
+  image.value = "";
 
-    if(item.classList[0] === "trash-btn") {
-        const todo = item.parentElement;
-        todo.classList.add("slide");
+  const genderEl = document.querySelectorAll('input[name="gender"]');
+  for (const rb of genderEl) {
+    rb.checked = false;
+  }
 
-        removeLocalTodos(todo);
-        todo.addEventListener("transitionend", function() {
-            todo.remove();
-        });
+  const skillEl = document.querySelectorAll('input[name="skill"]');
+  for (const rb of skillEl) {
+    rb.checked = false;
+  }
+};
+
+//function to get the data of the form
+const getData = function () {
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const website = document.getElementById('website').value;
+  const image = document.getElementById('image').value;
+  let gender;
+  let skills = [];
+
+  const genderEl = document.querySelectorAll('input[name="gender"]');
+  for (const rb of genderEl) {
+    if (rb.checked) {
+      gender = rb.value;
+      break;
+    }
+  };
+
+  const skillEl = document.querySelectorAll('input[name="skill"]');
+  for (const rb of skillEl) {
+    if (rb.checked) {
+      skills.push(rb.value);
+    }
+  }
+  return { name, email, website, image, gender, skills };
+};
+
+//adding event listener to the "enroll student" button with type submit to submit the form
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+  if (form.checkValidity()) {
+    const data = getData();
+    allUsersData.push(data);
+    printResult(data);
+    resetForm();
+
+
+  } else {
+    form.classList.add('was-validated');
+  };
+  removeSpan();
+});
+
+//function to remove the span tag ("fill the form to enroll the students")
+function removeSpan() {
+  var span = document.getElementById("span");
+  if(span){
+    span.remove();
+  }
+
+};
+
+//function to print the form data in the right side of div by generating html elments inside the div.
+function printResult(data) {
+  const resultEl = document.getElementById('enrolled-students');
+  let sectionHeading = null;
+  if (allUsersData.length == 1) {
+
+    sectionHeading = document.createElement('div');
+    const description = document.createElement('p');
+    description.innerHTML = "Description";
+    description.className = "description";
+
+    const image = document.createElement('p');
+    image.innerHTML = "Image"
+    image.className = "Image";
+
+    sectionHeading.className = "sectionHeading";
+    sectionHeading.append(description, image);
+  };
+
+  const wrapper = document.createElement('div');
+  wrapper.className = "wrapper";
+  wrapper.addEventListener('click', function (e) {
+    console.log(e.target.className);
+    if (e.target.className.includes('userDeleteBtn')) {
+      console.log('aaadfasdfasdf');
+      e.currentTarget.remove();
     }
 
-    if(item.classList[0] === "complete-btn") {
-        const todo = item.parentElement;
-        todo.classList.toggle("completed");
-    }
-}
+  });
 
-function filterTodo(e) {
-    const todos = todoList.childNodes;
-    todos.forEach(function(todo) {
-        switch(e.target.value) {
-            case "all": 
-                todo.style.display = "flex";
-                break;
-            case "completed": 
-                if(todo.classList.contains("completed")) {
-                    todo.style.display = "flex";
-                } else {
-                    todo.style.display = "none";
-                }
-                break;
-            case "incomplete":
-                if(!todo.classList.contains("completed")) {
-                    todo.style.display = "flex";
-                } else {
-                    todo.style.display = "none";
-                }
-                break;
-        }
-    });
-}
+  const deleteBtn = document.createElement('button');
+  deleteBtn.innerHTML = "+";
+  deleteBtn.className = "userDeleteBtn";
 
-function saveLocalTodos(todo) {
-    let todos;
-    if(localStorage.getItem("todos") === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem("todos"));
-    }
-    todos.push(todo);
-    localStorage.setItem("todos", JSON.stringify(todos));
-}
+  const textInfoContainer = document.createElement('div');
+  textInfoContainer.className = "textInfoContainer";
 
-function getLocalTodos() {
-    let todos;
-    if(localStorage.getItem("todos") === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem("todos"));
-    }
-    todos.forEach(function(todo) {
-        const todoDiv = document.createElement("div");
-        todoDiv.classList.add("todo");
-        const newTodo = document.createElement("li");
-        newTodo.innerText = todo;
-        newTodo.classList.add("todo-item");
-        todoDiv.appendChild(newTodo);
+  const imageContainer = document.createElement('div');
+  imageContainer.className = "imageContainer";
 
-        const completedButton = document.createElement("button");
-        completedButton.innerHTML = '<i class="fas fa-check-circle"></li>';
-        completedButton.classList.add("complete-btn");
-        todoDiv.appendChild(completedButton);
+  const imageHyperlink = document.createElement('a');
+  imageHyperlink.href = data.image;
+  imageHyperlink.target = "_blank";
 
-        const trashButton = document.createElement("button");
-        trashButton.innerHTML = '<i class="fas fa-trash"></li>';
-        trashButton.classList.add("trash-btn");
-        todoDiv.appendChild(trashButton);
 
-        todoList.appendChild(todoDiv);
-    });
-}
+  let name = document.createElement('p');
+  name.className = "infoText userName";
+  name.innerHTML = data.name;
 
-function removeLocalTodos(todo) {
-    let todos;
-    if(localStorage.getItem("todos") === null) {
-        todos = [];
-    } else {
-        todos = JSON.parse(localStorage.getItem("todos"));
-    }
+  let gender = document.createElement('p');
+  gender.className = "infoText gender";
+  gender.innerHTML = data.gender;
 
-    const todoIndex = todo.children[0].innerText;
-    todos.splice(todos.indexOf(todoIndex), 1);
-    localStorage.setItem("todos", JSON.stringify(todos));
-}
+  let email = document.createElement('p');
+  email.className = "infoText email";
+  email.innerHTML = data.email;
+
+  let website = document.createElement('a');
+  website.className = "infoText website";
+  website.innerHTML = data.website;
+  website.href = data.website;
+  website.target = "_blank";
+
+  let skills = document.createElement('p');
+  skills.className = "infoText skills";
+  skills.innerHTML = data.skills.join(', ');
+
+
+  let userImage = document.createElement('img');
+  userImage.className = "userImage";
+  userImage.src = data.image;
+
+
+  textInfoContainer.append(name, gender, email, website, skills);
+  imageHyperlink.appendChild(userImage);
+  imageContainer.appendChild(imageHyperlink);
+
+  wrapper.append(textInfoContainer, imageContainer, deleteBtn);
+
+  if (sectionHeading == null) {
+    resultEl.append(wrapper);
+  } else {
+    resultEl.append(sectionHeading, wrapper)
+  };
+
+};
